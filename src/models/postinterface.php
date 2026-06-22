@@ -1,5 +1,5 @@
 <?php
-namespace HamroNews\Database;
+namespace HamroNews\Models;
 
 // This file contains ONLY the structural definition (Contract)
 interface PostInterface {
