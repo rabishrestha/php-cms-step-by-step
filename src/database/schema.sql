@@ -29,3 +29,18 @@ INSERT INTO posts (title, slug, summary, content, category, author, published_at
 ('Hydropower Exports to India Reach Record Highs This Quarter', 'hydropower-exports-india-record-highs', 'Increased generational capacity during the wet season enables Nepal to maximize clean energy exports via the cross-border transmission line.', 'According to the Nepal Electricity Authority (NEA), optimized surplus power management generated substantial revenue this month. New generation projects hitting the grid are positioning renewable power as a primary driver of national economic growth.', 'Business', 'Pooja Adhikari', 'June 17, 2026', 'hydro.jpg'),
 
 ('Restoration of Historical Baseline Monemunts Begins in Bhaktapur Durbar Square', 'bhaktapur-durbar-square-restoration-begins', 'Local heritage conservation groups collaborate with expert craftsmen to preserve intricate woodwork on centuries-old structures.', 'Using traditional techniques passed down through generations, master artisans have begun reconstructing delicate courtyard lattices and structural beams. The initiative is heavily supported by community participation to maintain historical authenticity.', 'Culture', 'Rabi Shrestha', 'June 15, 2026', 'culture.jpg');
+
+CREATE TABLE IF NOT EXISTS users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    full_name VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- 5. Pre-seed a default administrator account
+-- Username: admin
+-- Plaintext Password chosen: admin123 (Secured below via BCRYPT)
+INSERT INTO users (username, password, full_name) VALUES
+('admin', '$2a$12$DJNmlORunjJpelglMwnCXOw4nrJRNkM9g4rRvDAiFU2fr2kQ.yyKm', 'Rabi Shrestha')
+ON DUPLICATE KEY UPDATE id=id;

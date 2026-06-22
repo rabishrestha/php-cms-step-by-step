@@ -1,4 +1,12 @@
 <?php
+
+// Secure Guard Integration Layer
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit;
+}
+
 require_once __DIR__ . '/../config/config.php';
 require_once SRC_PATH . 'database/mock_posts.php';
 require_once SRC_PATH . 'database/postmanager.php';
