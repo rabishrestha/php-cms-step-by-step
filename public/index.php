@@ -1,25 +1,49 @@
 <?php 
-// Pull in the shared header
-include_once __DIR__ . '/../templates/header.php'; 
+// 1. Pull in our configuration rules first
+require_once __DIR__ . '/../config/config.php'; 
+
+// 2. Load our mock database array using our new path constant
+require_once SRC_PATH . 'database/mock_posts.php';
+
+// 3. Load the frontend template header
+require_once TEMPLATE_PATH . 'header.php'; 
 ?>
 
 <main class="content-area">
     <section class="hero">
-        <h1>Welcome to the News & Blog Portal</h1>
-        <p>This is the framework-free public landing page where users read latest news stories.</p>
+        <h1>Welcome to Hamro News</h1>
+        <p>Your trusted, framework-free source for authentic digital journalism in Nepal.</p>
     </section>
 
-    <section class="articles-grid">
-        <h2>Latest News Articles (Static Placeholder)</h2>
-        <article class="card">
-            <h3>Breaking: Pure PHP is Incredible</h3>
-            <p>Building a CMS layout without a framework exposes how files assemble natively...</p>
-            <a href="blog-view.php">Read Full Article &rarr;</a>
-        </article>
+    <h2>Latest News Headlines</h2>
+    <section class="articles-grid" style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px;">
+        
+        <?php if (!empty($posts)): ?>
+            <?php foreach ($posts as $post): ?>
+                <article class="card" style="flex: 1; min-width: 300px; max-width: calc(33.33% - 20px);">
+                    <small style="color: #dc3545; font-weight: bold; text-transform: uppercase;">
+                        <?= htmlspecialchars($post['category']); ?>
+                    </small>
+                    <h3 style="margin: 5px 0 10px 0; font-size: 1.2rem;">
+                        <?= htmlspecialchars($post['title']); ?>
+                    </h3>
+                    <p style="font-size: 0.9rem; color: #666; line-height: 1.4;">
+                        <?= htmlspecialchars($post['summary']); ?>
+                    </p>
+                    <small style="display: block; margin-top: 10px; color: #999;">
+                        By <?= htmlspecialchars($post['author']); ?> | <?= $post['published_at']; ?>
+                    </small>
+                    <a href="blog-view.php?slug=<?= urlencode($post['slug']); ?>">Read Full Story &rarr;</a>
+                </article>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <p>No news stories found at this moment.</p>
+        <?php endif; ?>
+
     </section>
 </main>
 
 <?php 
-// Pull in the shared footer
-include_once __DIR__ . '/../templates/footer.php'; 
+// 4. Load the frontend template footer
+require_once TEMPLATE_PATH . 'footer.php'; 
 ?>
