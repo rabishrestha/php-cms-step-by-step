@@ -18,6 +18,7 @@ $slug = isset($_GET['slug']) ? trim($_GET['slug']) : '';
 // 4. Search our collection of Post objects for an entry matching the slug
 $currentPost = null;
 foreach ($postObjects as $post) {
+    // FIX: Use the getter method ->getSlug() instead of array brackets ['slug']
     if ($post->getSlug() === $slug) {
         $currentPost = $post;
         break; // Stop looking once we find it
@@ -28,13 +29,13 @@ foreach ($postObjects as $post) {
 require_once TEMPLATE_PATH . 'header.php'; 
 ?>
 
-<main class="content-area">
+<main class="content-area" style="padding: 20px; max-width: 800px; margin: 0 auto;">
     <?php if ($currentPost): ?>
         <article class="single-post">
             <small style="color: #dc3545; font-weight: bold; text-transform: uppercase;">
                 <?= htmlspecialchars($currentPost->getCategory()); ?>
             </small>
-            <h1 style="font-size: 2rem; margin: 10px 0 5px 0;">
+            <h1 style="font-size: 2rem; margin: 10px 0 5px 0; color: #1a1a2e;">
                 <?= htmlspecialchars($currentPost->getTitle()); ?>
             </h1>
             <p class="meta" style="color: #666; font-size: 0.9rem; margin-bottom: 20px;">
@@ -43,7 +44,7 @@ require_once TEMPLATE_PATH . 'header.php';
             <hr style="border: 0; border-top: 1px solid #ddd; margin-bottom: 20px;">
             
             <div class="post-body" style="font-size: 1.1rem; line-height: 1.6; color: #222;">
-                <p><?= htmlspecialchars($currentPost->getContent()); ?></p>
+                <p><?= nl2br(htmlspecialchars($currentPost->getContent())); ?></p>
             </div>
             
             <a href="index.php" style="display: inline-block; margin-top: 30px; color: #1a1a2e; text-decoration: none; font-weight: bold;">
@@ -51,10 +52,11 @@ require_once TEMPLATE_PATH . 'header.php';
             </a>
         </article>
     <?php else: ?>
-        <div class="error-box" style="text-align: center; padding: 40px; background: #fff; border-radius: 8px;">
+        <div class="error-box" style="text-align: center; padding: 40px; background: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
             <h2 style="color: #dc3545;">📰 Article Not Found</h2>
             <p>The news story you are trying to read does not exist or has been archived.</p>
-            <a href="index.php" style="color: #1a1a2e; font-weight: bold;">Return to Home Page</a>
+            <p style="font-size: 0.85rem; color: #999; font-family: monospace;">Requested URL Parameter: ?slug=<?= htmlspecialchars($slug) ?></p>
+            <a href="index.php" style="color: #1a1a2e; font-weight: bold; display: inline-block; margin-top: 15px;">Return to Home Page</a>
         </div>
     <?php endif; ?>
 </main>
