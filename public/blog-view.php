@@ -10,7 +10,7 @@ require_once SRC_PATH . 'database/postmanager.php';
 use HamroNews\Database\PostManager;
 
 // 3. Fetch unified objects from the text file dataset
-$postObjects = PostManager::fetchAll($posts);
+$postObjects = PostManager::fetchAll();
 
 // 4. Capture the 'slug' from the URL parameter ($_GET)
 $slug = isset($_GET['slug']) ? trim($_GET['slug']) : '';

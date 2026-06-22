@@ -6,7 +6,7 @@ require_once SRC_PATH . 'database/postmanager.php';
 use HamroNews\Database\PostManager;
 
 // Load all existing post objects out of the flat text data store
-$allPosts = PostManager::fetchAll($posts);
+$allPosts = PostManager::fetchAll();
 
 require_once TEMPLATE_PATH . 'header.php';
 ?>

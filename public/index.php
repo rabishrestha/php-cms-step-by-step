@@ -8,7 +8,7 @@ require_once SRC_PATH . 'database/postmanager.php';
 use HamroNews\Database\PostManager;
 
 // 1. Capture the return value of the manager into a variable!
-$postObjects = PostManager::fetchAll($posts); 
+$postObjects = PostManager::fetchAll(); 
 
 require_once TEMPLATE_PATH . 'header.php'; 
 ?>

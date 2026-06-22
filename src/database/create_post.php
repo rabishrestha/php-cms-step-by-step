@@ -1,49 +1,51 @@
 <?php
-// Ensure configurations are loaded
 require_once __DIR__ . '/../../config/config.php';
+require_once __DIR__ . '/db.php'; // Pull in our centralized PDO database adapter
 
-// Check if the file is accessed via a real POST form submission
+use HamroNews\Database\Database;
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
-    // 1. Retrieving & Sanitizing Data (Syllabus: Form Handling)
+    // 1. Unpack and sanitize incoming form inputs
     $title    = filter_var(trim($_POST['title']), FILTER_UNSAFE_RAW);
     $category = filter_var(trim($_POST['category']), FILTER_UNSAFE_RAW);
     $author   = filter_var(trim($_POST['author']), FILTER_UNSAFE_RAW);
     $summary  = filter_var(trim($_POST['summary']), FILTER_UNSAFE_RAW);
     $content  = filter_var(trim($_POST['content']), FILTER_UNSAFE_RAW);
 
-    // 2. Business Logic: Turn the title into a url-safe slug
-    // e.g., "Hello Kathmandu!" becomes "hello-kathmandu"
+    // Generate url-safe text routing token slugs
     $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $title), '-'));
+    $publishedAt = date('F j, Y');
 
-    // 3. Construct a simulated data array payload
-    $newPostPayload = [
-        'id'           => time(), // Generate a unique mock numeric ID using timestamp
-        'title'        => $title,
-        'slug'         => $slug,
-        'summary'      => $summary,
-        'content'      => $content,
-        'category'     => $category,
-        'author'       => $author,
-        'published_at' => date('F j, Y'),
-        'image'        => 'default.jpg'
-    ];
+    try {
+        $db = Database::getConnection();
 
-    // 4. File Handling: Writing data securely to disk (Syllabus: File Handling)
-    // We will append this data structure to a separate text file or JSON log
-    $storageFile = __DIR__ . '/user_submitted_posts.txt';
-    
-    // Convert array to a string line item using JSON format representation
-    $serializedData = json_encode($newPostPayload) . PHP_EOL;
+        // 2. Prepare the query layout using named parameters (:placeholder)
+        $sql = "INSERT INTO posts (title, slug, summary, content, category, author, published_at) 
+                VALUES (:title, :slug, :summary, :content, :category, :author, :published_at)";
+        
+        $stmt = $db->prepare($sql);
 
-    // Save it to disk using FILE_APPEND so entries don't overwrite previous ones
-    file_put_contents($storageFile, $serializedData, FILE_APPEND | LOCK_EX);
+        // 3. Bind value variables safely and execute data insertions securely
+        $stmt->execute([
+            ':title'        => $title,
+            ':slug'         => $slug,
+            ':summary'      => $summary,
+            ':content'      => $content,
+            ':category'     => $category,
+            ':author'       => $author,
+            ':published_at' => $publishedAt
+        ]);
 
-    // 5. Redirect the client back to the public homepage to witness changes!
-    header('Location: ' . BASE_URL . 'index.php?success=1');
-    exit;
+        // Redirect back home to display the update
+        header('Location: ' . BASE_URL . 'index.php?success=1');
+        exit;
+
+    } catch (\PDOException $e) {
+        error_log("Database insertion failed: " . $e->getMessage());
+        die("An error occurred while publishing the article. Check duplicate titles/slugs.");
+    }
 
 } else {
-    // Block unauthorized direct URL access
     die("Direct access restricted.");
 }
