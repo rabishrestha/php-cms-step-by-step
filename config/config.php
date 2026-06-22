@@ -12,6 +12,7 @@ define('BASE_URL', 'http://localhost/bim4projects/g0/news/public/');
 define('ROOT_PATH', dirname(__DIR__) . '/');
 define('TEMPLATE_PATH', ROOT_PATH . 'templates/');
 define('SRC_PATH', ROOT_PATH . 'src/');
+define('MODEL_PATH', SRC_PATH . 'models/');
 
 // Error Reporting
 ini_set('display_errors', 1);
