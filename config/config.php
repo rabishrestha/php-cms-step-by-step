@@ -17,7 +17,7 @@ define('MODEL_PATH', SRC_PATH . 'models/');
 
 // --- UNIT 5: DATABASE CONFIGURATION CREDENTIALS ---
 define('DB_HOST', '127.0.0.1');
-define('DB_NAME', 'hamro_news');
+define('DB_NAME', 'hamro_news_advance');
 define('DB_USER', 'root'); // Default XAMPP credentials
 define('DB_PASS', 'password');
 define('DB_CHARSET', 'utf8mb4');

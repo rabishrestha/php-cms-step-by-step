@@ -2,27 +2,38 @@
 require_once __DIR__ . '/../../config/config.php';
 require_once __DIR__ . '/db.php';
 
+session_start();
+// 1. Enforce active authentication gate clearance
+if (!isset($_SESSION['user_id'])) {
+    die("Unauthorized transaction access blocked.");
+}
+
 use HamroNews\Database\Database;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
-    $id       = (int)$_POST['id'];
-    $title    = filter_var(trim($_POST['title']), FILTER_UNSAFE_RAW);
-    $category = filter_var(trim($_POST['category']), FILTER_UNSAFE_RAW);
-    $author   = filter_var(trim($_POST['author']), FILTER_UNSAFE_RAW);
-    $summary  = filter_var(trim($_POST['summary']), FILTER_UNSAFE_RAW);
-    $content  = filter_var(trim($_POST['content']), FILTER_UNSAFE_RAW);
+    // 2. Extract inputs matching the new relational name parameters
+    $id          = (int)$_POST['id'];
+    $categoryId  = (int)$_POST['category_id'];
+    $title       = filter_var(trim($_POST['title']), FILTER_UNSAFE_RAW);
+    $publishedAt = $_POST['published_at']; // Captured straight from the html5 datetime-local picker
+    $summary     = filter_var(trim($_POST['summary']), FILTER_UNSAFE_RAW);
+    $content     = filter_var(trim($_POST['content']), FILTER_UNSAFE_RAW);
     
     $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $title), '-'));
-    $editedAt = date('F j, Y') . ' (Edited)';
 
     try {
         $db = Database::getConnection();
 
-        // Prepare relational database updates targeting precise primary keys
+        // 3. Update execution matching the normalized relational schema targets
+        // Note: We don't change user_id here so the original author remains intact
         $sql = "UPDATE posts 
-                SET title = :title, slug = :slug, summary = :summary, content = :content, 
-                    category = :category, author = :author, published_at = :published_at 
+                SET title = :title, 
+                    slug = :slug, 
+                    summary = :summary, 
+                    content = :content, 
+                    category_id = :category_id, 
+                    published_at = :published_at 
                 WHERE id = :id";
         
         $stmt = $db->prepare($sql);
@@ -32,9 +43,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ':slug'         => $slug,
             ':summary'      => $summary,
             ':content'      => $content,
-            ':category'     => $category,
-            ':author'       => $author,
-            ':published_at' => $editedAt,
+            ':category_id'  => $categoryId,
+            ':published_at' => $publishedAt,
             ':id'           => $id
         ]);
 

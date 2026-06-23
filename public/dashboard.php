@@ -1,20 +1,26 @@
 <?php
+// FIX: Check session status first to prevent the duplicate active notice
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Secure Guard Integration Layer
-session_start();
 if (!isset($_SESSION['user_id'])) {
     header('Location: login.php');
     exit;
 }
 
 require_once __DIR__ . '/../config/config.php';
-require_once SRC_PATH . 'database/mock_posts.php'; // Passes empty array $posts = [];
 require_once SRC_PATH . 'database/postmanager.php';
 
 use HamroNews\Database\PostManager;
 
-// Load all existing post objects out of the flat text data store
-$allPosts = PostManager::fetchAll();
+$userRole = $_SESSION['role'] ?? 'Reporter';
+$userId   = (int)$_SESSION['user_id'];
+
+// Fetch presentation datasets purely via clean decoupled controller methods
+$categoriesList = PostManager::fetchAllCategories();
+$allPosts       = PostManager::fetchDashboardByRole($userRole, $userId);
 
 require_once TEMPLATE_PATH . 'header.php';
 ?>
@@ -24,13 +30,17 @@ require_once TEMPLATE_PATH . 'header.php';
         <h3>CMS Actions</h3>
         <ul>
             <li><a href="dashboard.php" style="font-weight: bold; color: #dc3545;">📝 Manage Articles</a></li>
+            <?php if ($userRole === 'Admin'): ?>
+                <li><a href="categories.php">📁 Manage Categories</a></li>
+                <li><a href="users.php">👥 Manage User Access Control</a></li>
+            <?php endif; ?>
             <li><a href="index.php">🌐 View Live Site</a></li>
         </ul>
     </aside>
 
     <section class="main-dashboard-content">
-        <h1>Publisher Administration Terminal</h1>
-        <p style="color: #666; margin-bottom: 25px;">Create new news entries or modify live published files.</p>
+        <h1>Advanced Administration Desk</h1>
+        <p style="color:#666;">Signed in as: <strong><?= htmlspecialchars($_SESSION['full_name']); ?></strong> (Role: <code><?= $userRole ?></code>)</p>
 
         <div class="form-container" style="background: #f8f9fa; padding: 20px; border-radius: 6px; margin-bottom: 40px; border: 1px solid #e3e6f0;">
             <h2 style="font-size: 1.2rem; margin-bottom: 15px; color: #1a1a2e;">Add New Article</h2>
@@ -39,35 +49,32 @@ require_once TEMPLATE_PATH . 'header.php';
                 <div style="display: flex; gap: 15px;">
                     <div style="flex: 2;">
                         <label style="display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9rem;">Article Title</label>
-                        <input type="text" name="title" required placeholder="Headline goes here..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        <input type="text" name="title" required placeholder="Headline..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                     </div>
                     <div style="flex: 1;">
-                        <label style="display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9rem;">Category</label>
-                        <select name="category" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                            <option value="National">National</option>
-                            <option value="Tourism">Tourism</option>
-                            <option value="Technology">Technology</option>
-                            <option value="Sports">Sports</option>
-                            <option value="Business">Business</option>
-                            <option value="Culture">Culture</option>
+                        <label style="display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9rem;">Category Relation</label>
+                        <select name="category_id" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <?php foreach ($categoriesList as $cat): ?>
+                                <option value="<?= $cat['id'] ?>"><?= htmlspecialchars($cat['name']) ?></option>
+                            <?php endforeach; ?>
                         </select>
                     </div>
                 </div>
 
                 <div style="display: flex; gap: 15px;">
                     <div style="flex: 1;">
-                        <label style="display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9rem;">Author Name</label>
-                        <input type="text" name="author" required placeholder="Writer profile name" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9rem;">Publication Date & Time</label>
+                        <input type="datetime-local" name="published_at" required value="<?= date('Y-m-d\TH:i') ?>" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                     </div>
                     <div style="flex: 2;">
                         <label style="display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9rem;">Short Summary</label>
-                        <input type="text" name="summary" required placeholder="A single sentence snapshot" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        <input type="text" name="summary" required placeholder="Snapshot..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                     </div>
                 </div>
 
                 <div>
                     <label style="display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9rem;">Main Article Content</label>
-                    <textarea name="content" rows="4" required placeholder="Write the full body text here..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; resize: vertical;"></textarea>
+                    <textarea name="content" rows="4" required placeholder="Full story..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; resize: vertical;"></textarea>
                 </div>
 
                 <button type="submit" style="background: #1a1a2e; color: white; padding: 10px 20px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; align-self: flex-start;">
@@ -77,42 +84,40 @@ require_once TEMPLATE_PATH . 'header.php';
         </div>
 
         <h2 style="font-size: 1.3rem; margin-bottom: 10px; color: #1a1a2e;">Live News Archive Records</h2>
-        <?php if (!empty($allPosts)): ?>
-            <table class="cms-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Headline Title</th>
-                        <th>Category</th>
-                        <th>Author</th>
-                        <th>Date Published</th>
-                        <th>Action Options</th>
-                    </tr>
-                </thead>
-                <tbody>
+        <table class="cms-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Headline Title</th>
+                    <th>Category</th>
+                    <th>Author</th>
+                    <th>Date Published</th>
+                    <th>Action Options</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (!empty($allPosts)): ?>
                     <?php foreach ($allPosts as $post): ?>
                         <tr>
-                            <td><code><?= htmlspecialchars($post->getId()); ?></code></td>
-                            <td style="font-weight: 600;"><?= htmlspecialchars($post->getTitle()); ?></td>
-                            <td><span class="badge" style="background: #1a1a2e; color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.8rem;"><?= htmlspecialchars($post->getCategory()); ?></span></td>
-                            <td><?= htmlspecialchars($post->getAuthor()); ?></td>
-                            <td style="font-size: 0.85rem; color: #666;"><?= htmlspecialchars($post->getPublishedAt()); ?></td>
+                            <td><code><?= $post->getId() ?></code></td>
+                            <td style="font-weight:600;"><?= htmlspecialchars($post->getTitle()) ?></td>
+                            <td><span class="badge" style="background:#1a1a2e; color:white; padding:3px 6px; border-radius:4px; font-size:0.8rem;"><?= htmlspecialchars($post->getCategory()) ?></span></td>
+                            <td><?= htmlspecialchars($post->getAuthor()) ?></td>
+                            <td style="font-size:0.85rem; color:#666;"><?= date('M d, Y H:i', strtotime($post->getPublishedAt())) ?></td>
                             <td>
-                                <a href="edit-post.php?id=<?= urlencode($post->getId()); ?>" style="color: #0275d8; text-decoration: none; font-weight: bold; font-size: 0.9rem; margin-right: 15px;">✏️ Edit</a>
-                                <a href="../src/database/delete_post_processor.php?id=<?= urlencode($post->getId()); ?>" 
-                                   onclick="return confirm('Are you sure you want to permanently delete this article from Hamro News?');" 
-                                   style="color: #d9534f; text-decoration: none; font-weight: bold; font-size: 0.9rem;">🗑️ Delete</a>
+                                <a href="edit-post.php?id=<?= $post->getId() ?>" style="color:#0275d8; font-weight:bold; text-decoration:none; margin-right:15px;">✏️ Edit</a>
+                                <a href="../src/database/delete_post_processor.php?id=<?= $post->getId() ?>" onclick="return confirm('Confirm Deletion?');" style="color:#d9534f; font-weight:bold; text-decoration:none;">🗑️ Delete</a>
                             </td>
                         </tr>
                     <?php endforeach; ?>
-                </tbody>
-            </table>
-        <?php else: ?>
-            <p style="padding: 20px; background: #f8f9fa; border-radius: 4px; text-align: center; color: #888;">No database text row instances logged yet.</p>
-        <?php endif; ?>
+                <?php else: ?>
+                    <tr>
+                        <td colspan="6" style="text-align:center; padding:20px; color:#888;">No active news records found.</td>
+                    </tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
     </section>
 </main>
 
-<?php
-require_once TEMPLATE_PATH . 'footer.php';
-?>
+<?php require_once TEMPLATE_PATH . 'footer.php'; ?>
