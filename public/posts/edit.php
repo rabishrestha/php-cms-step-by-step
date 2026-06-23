@@ -1,25 +1,28 @@
 <?php
-// 1. Secure Guard Integration Layer
+// 1. PATH RESOLUTION: Require config FIRST so BASE_URL is active before headers or redirects execute
+require_once __DIR__ . '/../../config/config.php';
+
+// Secure Guard Integration Layer
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
 if (!isset($_SESSION['user_id'])) {
-    header('Location: login.php');
+    header('Location: ' . BASE_URL . 'login.php');
     exit;
 }
 
-require_once __DIR__ . '/../config/config.php';
-require_once SRC_PATH . 'database/postmanager.php';
+// Aligned with the new feature-grouped subfolder layout for postmanager
+require_once SRC_PATH . 'database/posts/postmanager.php';
 require_once SRC_PATH . 'database/db.php';
 
 use HamroNews\Database\PostManager;
 use HamroNews\Database\Database;
 
-// 2. Fetch all clean categories through our decoupled controller method
+// Fetch all clean categories through our decoupled controller method
 $categoriesList = PostManager::fetchAllCategories();
 
-// 3. Capture the ID from the URL parameter ($_GET) safely
+// Capture the ID from the URL parameter ($_GET) safely
 $targetId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $currentPost = null;
 
@@ -42,8 +45,12 @@ require_once TEMPLATE_PATH . 'header.php';
     <aside class="sidebar">
         <h3>CMS Actions</h3>
         <ul>
-            <li><a href="dashboard.php">📝 Manage Articles</a></li>
-            <li><a href="index.php">🌐 View Live Site</a></li>
+            <li><a href="<?= BASE_URL; ?>dashboard.php">📝 Manage Articles</a></li>
+            <?php if (($_SESSION['role'] ?? '') === 'Admin'): ?>
+                <li><a href="<?= BASE_URL; ?>categories/manage.php">📁 Manage Categories</a></li>
+                <li><a href="<?= BASE_URL; ?>users/manage.php">👥 Manage User Access Control</a></li>
+            <?php endif; ?>
+            <li><a href="<?= BASE_URL; ?>index.php">🌐 View Live Site</a></li>
         </ul>
     </aside>
 
@@ -52,7 +59,7 @@ require_once TEMPLATE_PATH . 'header.php';
         
         <?php if ($currentPost): ?>
             <div class="form-container" style="background: #f8f9fa; padding: 20px; border-radius: 6px; border: 1px solid #e3e6f0;">
-                <form action="../src/database/update_post_processor.php" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
+                <form action="<?= BASE_URL; ?>../src/database/posts/update.php" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
                     <input type="hidden" name="id" value="<?= $currentPost['id']; ?>">
                     
                     <div style="display: flex; gap: 15px;">
@@ -92,7 +99,7 @@ require_once TEMPLATE_PATH . 'header.php';
                         <button type="submit" style="background: #0275d8; color: white; padding: 10px 20px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">
                             💾 Save Changes
                         </button>
-                        <a href="dashboard.php" style="background: #6c757d; color: white; padding: 10px 20px; border-radius: 4px; text-decoration: none; font-weight: bold; font-size: 0.9rem; display: inline-block; line-height: 1.2;">
+                        <a href="<?= BASE_URL; ?>dashboard.php" style="background: #6c757d; color: white; padding: 10px 20px; border-radius: 4px; text-decoration: none; font-weight: bold; font-size: 0.9rem; display: inline-block; line-height: 1.2;">
                             Cancel
                         </a>
                     </div>

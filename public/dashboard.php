@@ -1,17 +1,20 @@
 <?php
-// FIX: Check session status first to prevent the duplicate active notice
+// 1. PATH RESOLUTION: Load config FIRST so BASE_URL and SRC_PATH constants are active immediately
+require_once __DIR__ . '/../config/config.php';
+
+// Safe Session Status validation guard
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Secure Guard Integration Layer
+// Secure Gate Authentication Guard
 if (!isset($_SESSION['user_id'])) {
-    header('Location: login.php');
+    header('Location: ' . BASE_URL . 'login.php');
     exit;
 }
 
-require_once __DIR__ . '/../config/config.php';
-require_once SRC_PATH . 'database/postmanager.php';
+// Points cleanly to the feature-grouped subfolder path inside src/database/
+require_once SRC_PATH . 'database/posts/postmanager.php';
 
 use HamroNews\Database\PostManager;
 
@@ -29,12 +32,12 @@ require_once TEMPLATE_PATH . 'header.php';
     <aside class="sidebar">
         <h3>CMS Actions</h3>
         <ul>
-            <li><a href="dashboard.php" style="font-weight: bold; color: #dc3545;">📝 Manage Articles</a></li>
+            <li><a href="<?= BASE_URL; ?>dashboard.php" style="font-weight: bold; color: #dc3545;">📝 Manage Articles</a></li>
             <?php if ($userRole === 'Admin'): ?>
-                <li><a href="categories.php">📁 Manage Categories</a></li>
-                <li><a href="users.php">👥 Manage User Access Control</a></li>
+                <li><a href="<?= BASE_URL; ?>categories/manage.php">📁 Manage Categories</a></li>
+                <li><a href="<?= BASE_URL; ?>users/manage.php">👥 Manage User Access Control</a></li>
             <?php endif; ?>
-            <li><a href="index.php">🌐 View Live Site</a></li>
+            <li><a href="<?= BASE_URL; ?>index.php">🌐 View Live Site</a></li>
         </ul>
     </aside>
 
@@ -44,7 +47,7 @@ require_once TEMPLATE_PATH . 'header.php';
 
         <div class="form-container" style="background: #f8f9fa; padding: 20px; border-radius: 6px; margin-bottom: 40px; border: 1px solid #e3e6f0;">
             <h2 style="font-size: 1.2rem; margin-bottom: 15px; color: #1a1a2e;">Add New Article</h2>
-            <form action="../src/database/create_post.php" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
+            <form action="<?= BASE_URL; ?>../src/database/posts/create.php" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
                 
                 <div style="display: flex; gap: 15px;">
                     <div style="flex: 2;">
@@ -105,8 +108,8 @@ require_once TEMPLATE_PATH . 'header.php';
                             <td><?= htmlspecialchars($post->getAuthor()) ?></td>
                             <td style="font-size:0.85rem; color:#666;"><?= date('M d, Y H:i', strtotime($post->getPublishedAt())) ?></td>
                             <td>
-                                <a href="edit-post.php?id=<?= $post->getId() ?>" style="color:#0275d8; font-weight:bold; text-decoration:none; margin-right:15px;">✏️ Edit</a>
-                                <a href="../src/database/delete_post_processor.php?id=<?= $post->getId() ?>" onclick="return confirm('Confirm Deletion?');" style="color:#d9534f; font-weight:bold; text-decoration:none;">🗑️ Delete</a>
+                                <a href="<?= BASE_URL; ?>posts/edit.php?id=<?= $post->getId() ?>" style="color:#0275d8; font-weight:bold; text-decoration:none; margin-right:15px;">✏️ Edit</a>
+                                <a href="<?= BASE_URL; ?>../src/database/posts/delete.php?id=<?= $post->getId() ?>" onclick="return confirm('Confirm Deletion?');" style="color:#d9534f; font-weight:bold; text-decoration:none;">🗑️ Delete</a>
                             </td>
                         </tr>
                     <?php endforeach; ?>

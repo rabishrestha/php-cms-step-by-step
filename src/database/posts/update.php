@@ -1,9 +1,13 @@
 <?php
-require_once __DIR__ . '/../../config/config.php';
-require_once __DIR__ . '/db.php';
+// 1. FIXED PATH: Jump 3 levels up to find the config file from src/database/posts/
+require_once __DIR__ . '/../../../config/config.php';
+require_once __DIR__ . '/../db.php'; // Finds db.php in the parent src/database/ folder
 
-session_start();
-// 1. Enforce active authentication gate clearance
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Enforce active authentication gate clearance
 if (!isset($_SESSION['user_id'])) {
     die("Unauthorized transaction access blocked.");
 }
@@ -12,7 +16,7 @@ use HamroNews\Database\Database;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
-    // 2. Extract inputs matching the new relational name parameters
+    // Extract inputs matching the new relational name parameters
     $id          = (int)$_POST['id'];
     $categoryId  = (int)$_POST['category_id'];
     $title       = filter_var(trim($_POST['title']), FILTER_UNSAFE_RAW);
@@ -25,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $db = Database::getConnection();
 
-        // 3. Update execution matching the normalized relational schema targets
+        // Update execution matching the normalized relational schema targets
         // Note: We don't change user_id here so the original author remains intact
         $sql = "UPDATE posts 
                 SET title = :title, 

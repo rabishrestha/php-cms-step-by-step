@@ -1,8 +1,12 @@
 <?php
-require_once __DIR__ . '/../../config/config.php';
-require_once __DIR__ . '/db.php';
+// 1. FIXED PATH: Jump 3 levels up to find the config file from src/database/posts/
+require_once __DIR__ . '/../../../config/config.php';
+require_once __DIR__ . '/../db.php'; // Finds db.php in the parent src/database/ folder
 
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 // Security clearance validation check
 if (!isset($_SESSION['user_id'])) {
     die("Unauthorized transaction access blocked.");
@@ -20,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $title), '-'));
     
-    // Bind explicit author identity matching the signed-in admin profile
+    // Bind explicit author identity matching the signed-in profile
     $userId = (int)$_SESSION['user_id']; 
 
     try {
@@ -45,4 +49,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         error_log("Advanced creation failed: " . $e->getMessage());
         die("Database insertion operation tracking breakdown.");
     }
+} else {
+    die("Direct access restricted.");
 }

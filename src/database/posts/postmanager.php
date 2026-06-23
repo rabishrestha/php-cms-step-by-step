@@ -1,9 +1,10 @@
 <?php
 namespace HamroNews\Database;
 
-require_once __DIR__ . '/../../config/config.php';
-require_once ROOT_PATH . 'src/models/post.php';
-require_once __DIR__ . '/db.php';
+// 1. FIXED PATHS: Align with globally defined constants and parent database configuration
+require_once __DIR__ . '/../../../config/config.php';
+require_once SRC_PATH . 'models/post.php';
+require_once __DIR__ . '/../db.php'; // Finds db.php in the parent directory level
 
 use HamroNews\Models\Post;
 use PDO;

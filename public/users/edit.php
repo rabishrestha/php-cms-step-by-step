@@ -2,7 +2,7 @@
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'Admin') {
     die("Access Denied.");
-}
+} 
 
 require_once __DIR__ . '/../config/config.php';
 require_once SRC_PATH . 'database/db.php';

@@ -1,8 +1,12 @@
 <?php
-require_once __DIR__ . '/../../config/config.php';
-require_once __DIR__ . '/db.php';
+// 1. FIXED PATH: Jump 3 levels up to reach the root folder from src/database/categories/
+require_once __DIR__ . '/../../../config/config.php';
+require_once __DIR__ . '/../db.php'; // Finds db.php in the parent src/database/ folder
 
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 if (!isset($_SESSION['user_id'])) {
     die("Unauthorized transaction access blocked.");
 }
@@ -21,7 +25,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $db = Database::getConnection();
         
-        // Execute dynamic row update matching target primary key metrics
         $stmt = $db->prepare("UPDATE categories SET name = :name, slug = :slug WHERE id = :id");
         $stmt->execute([
             ':name' => $name,
@@ -29,7 +32,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ':id'   => $id
         ]);
 
-        header('Location: ' . BASE_URL . 'categories.php?updated=1');
+        // 2. FIXED REDIRECT: Target the new feature-grouped view file location
+        header('Location: ' . BASE_URL . 'categories/manage.php?updated=1');
         exit;
     } catch (\PDOException $e) {
         error_log("Failed to mutate category metrics: " . $e->getMessage());

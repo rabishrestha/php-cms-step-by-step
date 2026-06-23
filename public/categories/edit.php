@@ -1,14 +1,17 @@
 <?php
+// 1. Load config FIRST to guarantee BASE_URL and SRC_PATH are initialized immediately
+require_once __DIR__ . '/../../config/config.php';
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Secure Guard Integration Layer
 if (!isset($_SESSION['user_id'])) {
-    header('Location: login.php');
+    header('Location: ' . BASE_URL . 'login.php');
     exit;
 }
 
-require_once __DIR__ . '/../config/config.php';
 require_once SRC_PATH . 'database/db.php';
 
 use HamroNews\Database\Database;
@@ -34,9 +37,12 @@ require_once TEMPLATE_PATH . 'header.php';
     <aside class="sidebar">
         <h3>CMS Actions</h3>
         <ul>
-            <li><a href="dashboard.php">📝 Manage Articles</a></li>
-            <li><a href="categories.php" style="font-weight: bold; color: #dc3545;">📁 Manage Categories</a></li>
-            <li><a href="index.php">🌐 View Live Site</a></li>
+            <li><a href="<?= BASE_URL; ?>dashboard.php">📝 Manage Articles</a></li>
+            <li><a href="<?= BASE_URL; ?>categories/manage.php" style="font-weight: bold; color: #dc3545;">📁 Manage Categories</a></li>
+            <?php if (($_SESSION['role'] ?? '') === 'Admin'): ?>
+                <li><a href="<?= BASE_URL; ?>users/manage.php">👥 Manage User Access Control</a></li>
+            <?php endif; ?>
+            <li><a href="<?= BASE_URL; ?>index.php">🌐 View Live Site</a></li>
         </ul>
     </aside>
 
@@ -45,7 +51,7 @@ require_once TEMPLATE_PATH . 'header.php';
         
         <?php if ($currentCategory): ?>
             <div class="form-container" style="background: #f8f9fa; padding: 20px; border-radius: 6px; border: 1px solid #e3e6f0; max-width: 500px;">
-                <form action="../src/database/update_category_processor.php" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
+                <form action="<?= BASE_URL; ?>../src/database/categories/update.php" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
                     <input type="hidden" name="id" value="<?= $currentCategory['id'] ?>">
 
                     <div>
@@ -57,7 +63,7 @@ require_once TEMPLATE_PATH . 'header.php';
                         <button type="submit" style="background: #0275d8; color: white; padding: 10px 20px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">
                             💾 Save Category
                         </button>
-                        <a href="categories.php" style="background: #6c757d; color: white; padding: 10px 20px; border-radius: 4px; text-decoration: none; font-weight: bold; font-size: 0.9rem; text-align: center;">
+                        <a href="<?= BASE_URL; ?>categories/manage.php" style="background: #6c757d; color: white; padding: 10px 20px; border-radius: 4px; text-decoration: none; font-weight: bold; font-size: 0.9rem; text-align: center; line-height: 1.2;">
                             Cancel
                         </a>
                     </div>

@@ -1,6 +1,15 @@
 <?php
-require_once __DIR__ . '/../../config/config.php';
-require_once __DIR__ . '/db.php';
+// 1. FIXED PATH: Jump 3 levels up to find the config file from src/database/posts/
+require_once __DIR__ . '/../../../config/config.php';
+require_once __DIR__ . '/../db.php'; // Finds db.php in the parent src/database/ folder
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+if (!isset($_SESSION['user_id'])) {
+    die("Unauthorized transaction access blocked.");
+}
 
 use HamroNews\Database\Database;
 

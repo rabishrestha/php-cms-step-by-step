@@ -1,6 +1,6 @@
 <?php 
 require_once __DIR__ . '/../config/config.php'; 
-require_once SRC_PATH . 'database/postmanager.php';
+require_once SRC_PATH . 'database/posts/postmanager.php';
 
 use HamroNews\Database\PostManager;
 

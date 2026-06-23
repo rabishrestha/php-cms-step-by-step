@@ -1,7 +1,7 @@
 <?php 
 // 1. Pull in configurations and path constants
 require_once __DIR__ . '/../config/config.php'; 
-require_once SRC_PATH . 'database/postmanager.php'; 
+require_once __DIR__ . '/../src/database/posts/postmanager.php'; 
 
 use HamroNews\Database\PostManager;
 
