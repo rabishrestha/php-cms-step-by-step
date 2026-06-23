@@ -38,4 +38,32 @@ class PostManager {
         
         return $objectList;
     }
+
+    /**
+     * Fetches a single article from the database matching a unique slug
+     * @param string $slug The URL slug of the post
+     * @return Post|null Returns a Post object or null if not found
+     */
+    public static function fetchBySlug(string $slug): ?Post {
+        if (empty(trim($slug))) {
+            return null;
+        }
+
+        try {
+            $db = Database::getConnection();
+
+            // Use a prepared statement with a WHERE clause to target the unique slug
+            $stmt = $db->prepare("SELECT * FROM posts WHERE slug = :slug LIMIT 1");
+            $stmt->execute([':slug' => trim($slug)]);
+            
+            $row = $stmt->fetch();
+            
+            // If a matching row is found, return it as a Post object; otherwise return null
+            return $row ? new Post($row) : null;
+            
+        } catch (Exception $e) {
+            error_log("Database fetchBySlug failed: " . $e->getMessage());
+            return null;
+        }
+    }
 }
