@@ -23,18 +23,19 @@
             <a href="index.php" style="color: white; text-decoration: none; font-weight: bold;">🌐 News Stream Feed</a>
             
             <?php
-            // Detect active authentication status state configurations dynamically
             if (session_status() === PHP_SESSION_NONE) {
                 session_start();
             }
             
             if (isset($_SESSION['user_id'])): 
+                $userRole = $_SESSION['role'] ?? 'Reporter';
             ?>
                 <a href="dashboard.php" style="color: white; text-decoration: none; font-weight: bold;">📊 Control Desk</a>
-                <span style="color: #4ec9b0; font-size: 0.9rem;">👋 Namaste, <strong><?= htmlspecialchars($_SESSION['full_name']); ?></strong></span>
+                <span style="color: #4ec9b0; font-size: 0.9rem;">👋 Namaste, <strong><?= htmlspecialchars($_SESSION['full_name']); ?></strong> (<?= $userRole ?>)</span>
                 <a href="logout.php" style="background: #dc3545; color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-weight: bold; font-size: 0.85rem;">Sign Out</a>
             <?php else: ?>
-                <a href="login.php" style="background: #0275d8; color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-weight: bold; font-size: 0.85rem;">🔑 Administrative Portal</a>
+                <a href="login.php" style="color: white; text-decoration: none; font-weight: bold; font-size: 0.85rem;">🔑 Sign In</a>
+                <a href="register.php" style="background: #28a745; color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-weight: bold; font-size: 0.85rem;">📝 Register Account</a>
             <?php endif; ?>
         </nav>
     </header>
