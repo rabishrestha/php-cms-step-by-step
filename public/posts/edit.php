@@ -19,7 +19,7 @@ require_once SRC_PATH . 'database/db.php';
 use HamroNews\Database\PostManager;
 use HamroNews\Database\Database;
 
-// Fetch all clean categories through our decoupled controller method
+// Fetch all clean categories through our decoupled controller method (returns an array of Category objects)
 $categoriesList = PostManager::fetchAllCategories();
 
 // Capture the ID from the URL parameter ($_GET) safely
@@ -71,8 +71,8 @@ require_once TEMPLATE_PATH . 'header.php';
                             <label style="display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9rem;">Category Relation</label>
                             <select name="category_id" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                                 <?php foreach ($categoriesList as $cat): ?>
-                                    <option value="<?= $cat['id'] ?>" <?= (int)$currentPost['category_id'] === (int)$cat['id'] ? 'selected' : ''; ?>>
-                                        <?= htmlspecialchars($cat['name']) ?>
+                                    <option value="<?= $cat->getId(); ?>" <?= (int)$currentPost['category_id'] === $cat->getId() ? 'selected' : ''; ?>>
+                                        <?= htmlspecialchars($cat->getName()); ?>
                                     </option>
                                 <?php endforeach; ?>
                             </select>

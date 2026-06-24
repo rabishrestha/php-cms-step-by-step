@@ -1,10 +1,10 @@
 <?php
 namespace HamroNews\Database;
 
-// 1. FIXED PATHS: Align with globally defined constants and parent database configuration
+// FIXED PATHS: Align with globally defined constants and parent database configuration
 require_once __DIR__ . '/../../../config/config.php';
 require_once SRC_PATH . 'models/post.php';
-require_once __DIR__ . '/../db.php'; // Finds db.php in the parent directory level
+require_once __DIR__ . '/../db.php'; // Finds db.php in the parent src/database/ folder
 
 use HamroNews\Models\Post;
 use PDO;
@@ -138,36 +138,39 @@ class PostManager {
     }
 
     /**
-     * GLOBAL SYSTEM DATA INTERFACE: Retrieves all categories cleanly from the database
+     * GLOBAL SYSTEM DATA INTERFACE: Retrieves all categories cleanly from the database as models
+     * @return \HamroNews\Models\Category[]
      */
     public static function fetchAllCategories(): array {
+        require_once ROOT_PATH . 'src/models/category.php';
+        
+        $objectList = [];
         try {
             $db = Database::getConnection();
-            return $db->query("SELECT * FROM categories ORDER BY name ASC")->fetchAll();
+            $stmt = $db->query("SELECT * FROM categories ORDER BY name ASC");
+            
+            while ($row = $stmt->fetch()) {
+                $objectList[] = new \HamroNews\Models\Category($row);
+            }
         } catch (Exception $e) {
             error_log("Category fetch failure: " . $e->getMessage());
-            return [];
         }
+        return $objectList;
     }
 
     /**
      * ROLE-BASED CMS DATA INTERFACE: Fetches post lists filtered by authorization clearance parameters
-     * @param string $role The authenticated user's role ('Admin' or 'Reporter')
-     * @param int $userId The primary key ID of the currently authenticated user
-     * @return Post[]
      */
     public static function fetchDashboardByRole(string $role, int $userId): array {
         $objectList = [];
         try {
             $db = Database::getConnection();
             
-            // 1. Base query template structure
             $sql = "SELECT p.*, u.full_name AS author_name, c.name AS category_name 
                     FROM posts p 
                     INNER JOIN users u ON p.user_id = u.id 
                     INNER JOIN categories c ON p.category_id = c.id";
             
-            // 2. Conditionally enforce data isolation boundaries based on role parameters
             if ($role !== 'Admin') {
                 $sql .= " WHERE p.user_id = :user_id";
             }

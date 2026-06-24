@@ -12,22 +12,17 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-require_once SRC_PATH . 'database/db.php';
+// Aligned with the new class-based manager subfolder location
+require_once SRC_PATH . 'database/categories/categorymanager.php';
 
-use HamroNews\Database\Database;
+use HamroNews\Database\CategoryManager;
 
 $targetId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $currentCategory = null;
 
 if ($targetId > 0) {
-    try {
-        $db = Database::getConnection();
-        $stmt = $db->prepare("SELECT * FROM categories WHERE id = :id LIMIT 1");
-        $stmt->execute([':id' => $targetId]);
-        $currentCategory = $stmt->fetch();
-    } catch (\Exception $e) {
-        error_log("Failed to fetch category data: " . $e->getMessage());
-    }
+    // OPTIMIZED: Using class-based data mapping instead of raw SQL queries in UI code
+    $currentCategory = CategoryManager::fetchById($targetId);
 }
 
 require_once TEMPLATE_PATH . 'header.php';
@@ -52,11 +47,11 @@ require_once TEMPLATE_PATH . 'header.php';
         <?php if ($currentCategory): ?>
             <div class="form-container" style="background: #f8f9fa; padding: 20px; border-radius: 6px; border: 1px solid #e3e6f0; max-width: 500px;">
                 <form action="<?= BASE_URL; ?>../src/database/categories/update.php" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
-                    <input type="hidden" name="id" value="<?= $currentCategory['id'] ?>">
+                    <input type="hidden" name="id" value="<?= $currentCategory->getId(); ?>">
 
                     <div>
                         <label style="display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9rem;">Category Name</label>
-                        <input type="text" name="name" required value="<?= htmlspecialchars($currentCategory['name']) ?>" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+                        <input type="text" name="name" required value="<?= htmlspecialchars($currentCategory->getName()); ?>" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
                     </div>
 
                     <div style="display: flex; gap: 10px;">

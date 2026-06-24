@@ -17,7 +17,7 @@ require_once SRC_PATH . 'database/posts/postmanager.php';
 
 use HamroNews\Database\PostManager;
 
-// Pull all categories via our decoupled manager method
+// Pull all categories via our decoupled manager method (returns an array of Category objects)
 $categoriesList = PostManager::fetchAllCategories();
 
 require_once TEMPLATE_PATH . 'header.php';
@@ -88,14 +88,14 @@ require_once TEMPLATE_PATH . 'header.php';
                 <?php if (!empty($categoriesList)): ?>
                     <?php foreach ($categoriesList as $cat): ?>
                         <tr>
-                            <td><code><?= $cat['id'] ?></code></td>
-                            <td style="font-weight: 600;"><?= htmlspecialchars($cat['name']) ?></td>
-                            <td><code><?= htmlspecialchars($cat['slug']) ?></code></td>
+                            <td><code><?= $cat->getId(); ?></code></td>
+                            <td style="font-weight: 600;"><?= htmlspecialchars($cat->getName()); ?></td>
+                            <td><code><?= htmlspecialchars($cat->getSlug()); ?></code></td>
                             <td>
-                                <a href="<?= BASE_URL; ?>categories/edit.php?id=<?= $cat['id'] ?>" 
+                                <a href="<?= BASE_URL; ?>categories/edit.php?id=<?= $cat->getId(); ?>" 
                                    style="color: #0275d8; font-weight: bold; text-decoration: none; margin-right: 15px; font-size: 0.9rem;">✏️ Edit</a>
                                 
-                                <a href="<?= BASE_URL; ?>../src/database/categories/delete.php?id=<?= $cat['id'] ?>" 
+                                <a href="<?= BASE_URL; ?>../src/database/categories/delete.php?id=<?= $cat->getId(); ?>" 
                                    onclick="return confirm('Are you sure you want to delete this category?');" 
                                    style="color: #d9534f; font-weight: bold; text-decoration: none; font-size: 0.9rem;">🗑️ Delete</a>
                             </td>

@@ -22,7 +22,7 @@ $userRole = $_SESSION['role'] ?? 'Reporter';
 $userId   = (int)$_SESSION['user_id'];
 
 // Fetch presentation datasets purely via clean decoupled controller methods
-$categoriesList = PostManager::fetchAllCategories();
+$categoriesList = PostManager::fetchAllCategories(); // Now returns an array of Category objects
 $allPosts       = PostManager::fetchDashboardByRole($userRole, $userId);
 
 require_once TEMPLATE_PATH . 'header.php';
@@ -45,6 +45,24 @@ require_once TEMPLATE_PATH . 'header.php';
         <h1>Advanced Administration Desk</h1>
         <p style="color:#666;">Signed in as: <strong><?= htmlspecialchars($_SESSION['full_name']); ?></strong> (Role: <code><?= $userRole ?></code>)</p>
 
+        <?php if (isset($_GET['success'])): ?>
+            <div style="background:#d4edda; color:#155724; padding:10px; border-radius:4px; margin-bottom:15px; font-weight:bold; font-size:0.9rem;">
+                🚀 News article successfully published to the public stream!
+            </div>
+        <?php endif; ?>
+
+        <?php if (isset($_GET['updated'])): ?>
+            <div style="background:#d4edda; color:#155724; padding:10px; border-radius:4px; margin-bottom:15px; font-weight:bold; font-size:0.9rem;">
+                📝 Article modifications successfully recorded!
+            </div>
+        <?php endif; ?>
+
+        <?php if (isset($_GET['deleted'])): ?>
+            <div style="background:#d4edda; color:#155724; padding:10px; border-radius:4px; margin-bottom:15px; font-weight:bold; font-size:0.9rem;">
+                🗑️ Article successfully removed from archive tables.
+            </div>
+        <?php endif; ?>
+
         <div class="form-container" style="background: #f8f9fa; padding: 20px; border-radius: 6px; margin-bottom: 40px; border: 1px solid #e3e6f0;">
             <h2 style="font-size: 1.2rem; margin-bottom: 15px; color: #1a1a2e;">Add New Article</h2>
             <form action="<?= BASE_URL; ?>../src/database/posts/create.php" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
@@ -58,7 +76,7 @@ require_once TEMPLATE_PATH . 'header.php';
                         <label style="display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9rem;">Category Relation</label>
                         <select name="category_id" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                             <?php foreach ($categoriesList as $cat): ?>
-                                <option value="<?= $cat['id'] ?>"><?= htmlspecialchars($cat['name']) ?></option>
+                                <option value="<?= $cat->getId(); ?>"><?= htmlspecialchars($cat->getName()); ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>

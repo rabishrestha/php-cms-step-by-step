@@ -1,7 +1,9 @@
 <?php 
 // 1. Pull in configurations and path constants
 require_once __DIR__ . '/../config/config.php'; 
-require_once __DIR__ . '/../src/database/posts/postmanager.php'; 
+
+// FIXED: Swapped out broken relative path formatting for the absolute constant SRC_PATH
+require_once SRC_PATH . 'database/posts/postmanager.php'; 
 
 use HamroNews\Database\PostManager;
 
@@ -33,7 +35,7 @@ require_once TEMPLATE_PATH . 'header.php';
                 <p><?= nl2br(htmlspecialchars($currentPost->getContent())); ?></p>
             </div>
             
-            <a href="index.php" style="display: inline-block; margin-top: 40px; color: #1a1a2e; text-decoration: none; font-weight: bold; border: 1px solid #1a1a2e; padding: 8px 16px; border-radius: 4px; transition: 0.2s;">
+            <a href="<?= BASE_URL; ?>index.php" style="display: inline-block; margin-top: 40px; color: #1a1a2e; text-decoration: none; font-weight: bold; border: 1px solid #1a1a2e; padding: 8px 16px; border-radius: 4px; transition: 0.2s;">
                 &larr; Back to Home News Feed
             </a>
         </article>
@@ -45,7 +47,7 @@ require_once TEMPLATE_PATH . 'header.php';
                 Requested Signature Slug: "<?= htmlspecialchars($slug) ?>"
             </p>
             <br>
-            <a href="index.php" style="color: #0275d8; font-weight: bold; display: inline-block; margin-top: 20px; text-decoration: none;">Return to Home Page</a>
+            <a href="<?= BASE_URL; ?>index.php" style="color: #0275d8; font-weight: bold; display: inline-block; margin-top: 20px; text-decoration: none;">Return to Home Page</a>
         </div>
     <?php endif; ?>
 </main>
