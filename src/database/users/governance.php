@@ -1,25 +1,41 @@
 <?php
-require_once __DIR__ . '/../../config/config.php';
-require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/usermanager.php';
 
-session_start();
-if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'Admin') { die("Access unauthorized."); }
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-use HamroNews\Database\Database;
+// 1. Enforce active admin clearance check
+if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'Admin') {
+    die("Access Denied: Administrative Clearance Required.");
+}
 
-$action   = $_GET['action'] ?? '';
-$targetId = (int)($_GET['id'] ?? 0);
+use HamroNews\Database\UserManager;
 
-if ($targetId === (int)$_SESSION['user_id']) { die("Self-mutations restricted."); }
+$action   = isset($_GET['action']) ? trim($_GET['action']) : '';
+$targetId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
-if ($targetId > 0 && in_array($action, ['approve', 'deactivate'])) {
-    $newStatus = ($action === 'approve') ? 'Active' : 'Inactive';
-    try {
-        $db = Database::getConnection();
-        // Soft deletion switch updating user lifecycle status cleanly
-        $stmt = $db->prepare("UPDATE users SET status = :status WHERE id = :id");
-        $stmt->execute([':status'=>$newStatus, ':id'=>$targetId]);
-        header('Location: ' . BASE_URL . 'users.php');
-        exit;
-    } catch (\PDOException $e) { die("Operational mutation execution breakdown."); }
+if ($targetId <= 0) {
+    die("Invalid transaction identity mapping parameters.");
+}
+
+// Prevent self-deactivation safeguards
+if ($action === 'deactivate' && $targetId === (int)$_SESSION['user_id']) {
+    die("Operation Blocked: Self-deactivation metrics are restricted.");
+}
+
+try {
+    if ($action === 'approve') {
+        UserManager::updateStatus($targetId, 'Active');
+    } elseif ($action === 'deactivate') {
+        UserManager::updateStatus($targetId, 'Inactive');
+    } else {
+        die("Invalid runtime workflow command.");
+    }
+
+    header('Location: ' . BASE_URL . 'users/manage.php?updated=1');
+    exit;
+} catch (Exception $e) {
+    error_log("User governance transformation breakdown: " . $e->getMessage());
+    die("Internal script error occurred during state transformation operations.");
 }
